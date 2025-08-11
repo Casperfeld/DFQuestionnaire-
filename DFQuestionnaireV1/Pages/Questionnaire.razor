@@ -1,0 +1,546 @@
+﻿@page "/questionnaire"
+@using DFQuestionnaireV1.Models
+
+<h2><strong>Game Theory Questionnaire</strong></h2>
+<br >
+
+<div>
+
+
+
+    <style>
+        .circular-sm-btn {
+            width: 1rem;
+            height: 1rem;
+            padding: 0;
+            font-size: 0.8rem;
+            border-radius: 50%;
+            background: white;
+            border-color: black
+        }
+
+            .circular-sm-btn.selected {
+                background: gray;
+                border-color: black;
+            }
+
+    </style>
+
+    <style>
+        /* 1) limit the column to 200px (adjust as you like) */
+        .limited-col {
+            max-width: 350px;
+            overflow-wrap: break-word; /* force long words to wrap */
+        }
+
+    </style>
+
+    <style>
+        .no-spin::-webkit-outer-spin-button,
+        .no-spin::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .no-spin[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+            appearance: textfield; /* Future/others */
+        }
+
+    </style>
+
+
+    <style>
+        
+        .quadrant-grid{
+            display:grid;
+            /* give each column a fixed (or min/max) width instead of 1fr */
+            grid-template-columns: repeat(2, 8rem);   /* try 6rem/120px/etc */
+            gap:4px;
+            width:fit-content;                         /* so the grid hugs its cells */
+        }
+
+        .quadrant {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            text-align: center;
+            /* dimensions */
+            min-height: 5rem;
+            min-length: 5rem;
+        }
+
+        .highlight {
+            background-color: #fffa8f; /* pale yellow */
+        }
+    </style>
+
+ 
+
+
+
+
+    <h4 ><strong>Project Value</strong></h4>
+    <hr style="width:650px; border-top:6px solid #336699;" />
+    <div class="d-flex" style="gap:3rem;">
+       
+        <!-- Left column: Potential Consequences -->
+        <div class="limited-col hanging-indent">
+           
+           
+            <h7>
+                <em>
+                    1. If player interactions are not managed effectively, what might be the consequences?
+                </em>
+                
+            </h7>
+
+            @foreach (var pq in PotentialConsequences)
+            {
+                <div class="mb-1 d-flex align-items-center" style="gap:.2rem;">
+                    <button type="button"
+                            class="circular-sm-btn flex-shrink-0 @(pq.Answer == "Yes" ? "selected" : "")"
+                            @onclick='() => ToggleAnswer(pq, "Yes")'>
+                    </button>
+
+                    <label class="mb-0">@pq.Text</label>
+                  
+                  
+                </div>
+            }
+        </div>
+
+        <!-- Right column: Inputs -->
+        <div class="limited-col hanging-indent">
+           
+            <h7>
+                <em>
+                    2. Enter project value and amount risk. 
+                </em>
+
+            </h7>
+            <br />
+            <br />
+
+            <!-- Project Value-->
+            <div class="d-flex flex-column" style="gap:1rem;">
+           
+                 <div class="d-flex align-items-center" style="gap:.5rem;">
+
+                    <InputNumber Value="ProjectValue.Answer"
+                                 ValueChanged="@( (int newVal) => {
+                                 ProjectValue.Answer = newVal;
+                                 Calculate();
+                                  } )"
+                                 ValueExpression="(() => ProjectValue.Answer)"
+                                 class="form-control no-spin"
+                                 style="max-width:70px;" />
+                    <span class="ms-1"></span>
+
+
+                    <label class="mb-0">@ProjectValue.Text</label>
+
+                </div>
+
+                <!-- Management Radar-->
+             
+                <div class="d-flex align-items-center" style="gap:.5rem;">
+
+                    <InputNumber Value="MgmtRadar.Answer"
+                                 ValueChanged="@( (int newVal) => {
+                                 MgmtRadar.Answer = newVal;
+                                 Calculate();
+                                  } )"
+                                 ValueExpression="(() => MgmtRadar.Answer)"
+                                 class="form-control no-spin"
+                                 style="max-width:70px;" />
+                    <span class="ms-1"></span>
+
+
+                    <label class="mb-0">@MgmtRadar.Text</label>
+
+                </div>
+
+
+                <!-- interaction  Risk -->
+             
+                <div class="d-flex align-items-center" style="gap:.5rem;">
+
+                    <InputNumber Value="InteractionRisk.Answer"
+                                 ValueChanged="@( (int newVal) => {
+                                 InteractionRisk.Answer = newVal;
+                                 Calculate();
+                                  } )"
+                                 ValueExpression="(() => InteractionRisk.Answer)"
+                                 class="form-control no-spin"
+                                 style="max-width:70px;" />
+                    <span class="ms-1"></span>
+
+
+                    <label class="mb-0">@InteractionRisk.Text</label>
+
+                </div>
+
+
+            </div>
+        </div>
+
+
+       <div class="quadrant-grid">
+            <!-- top-left -->
+            <div class="quadrant @(Left && Top ? "highlight" : "")">
+                Top Left
+            </div>
+
+            <!-- top-right -->
+            <div class="quadrant @(!Left && Top ? "highlight" : "")">
+                Top Right
+            </div>
+
+            <!-- bottom-left -->
+            <div class="quadrant @(Left && !Top ? "highlight" : "")">
+                Bottom Left
+            </div>
+
+            <!-- bottom-right -->
+            <div class="quadrant @(!Left && !Top ? "highlight" : "")">
+                Bottom Right
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+    <br >
+    <h4><strong> Stakeholder Complexity </strong></h4>
+    <hr style="width:850px; border-top:6px solid #336699;" />
+    
+    <div class="d-flex" style="gap:6rem;">
+        
+        <!--Left Column: Dynamic Types -->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    3. Select the types of dynamics involved. 
+                </em>
+
+            </h7>
+
+
+            @foreach (var pd in ProjectDecisions)
+            {
+                <div class="mb-1 d-flex align-items-center" style="gap:.2rem;">
+                   
+
+                    <!-- YES toggle -->
+                    <button type="button"
+                            class="circular-sm-btn @(pd.Answer == "Yes" ? "selected" : "")"
+                            @onclick='() => ToggleAnswer(pd, "Yes")'>
+                
+                    </button>
+
+                    <label>@pd.Text</label>
+
+                </div>
+            }
+
+        </div>
+
+        <!--Right Column: Interaction Dynamics-->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    4. Classify the high-level interaction dynamics 
+                </em>
+
+            </h7>
+
+            <br>
+
+
+            <div class="mb-3">
+  
+
+                @foreach (var opt in InteractionDynamics.Options)
+                {
+                    <div class="mb-1">
+                        <!-- 1) Button + label on one line -->
+                        <div class="d-flex align-items-center" style="gap:.2rem;">
+                            <button type="button"
+                                    class="circular-sm-btn @(InteractionDynamics.SelectedOption == opt ? "selected" : "")"
+                                    @onclick='() => {
+                                        InteractionDynamics.SelectedOption = opt;
+                                        Calculate();
+
+                                    }'>
+                            </button>
+                            <label class="mb-0">@opt</label>
+                        </div>
+
+                        <!-- 2) Description below, only for the selected option -->
+                            <p class="ps-4 text-muted mb-2">
+                                @if (opt == "LIMITED")
+                                {
+                                    <h12 >
+                                        1 or 2 actions and reactions by stakeholders
+                                    </h12>
+                                   
+                                }
+                                else if (opt == "SIGNIFICANT")
+                                {
+                                    <h12>
+                                        Several actions and reactions, sometimes with multiple stakeholders.
+                                    </h12>
+                                   
+                                }
+                                else if (opt == "BID")
+                                {
+                                    <h12>
+                                        Stakeholder actions &reactions could occur pre or post bid.
+                                    </h12>
+                                    
+                                }
+                            </p>
+                        
+                    </div>
+                }
+              
+
+            </div>
+          
+
+        </div>
+
+
+    </div>
+
+
+        <br >
+    <h4><strong> Uncertainties </strong></h4>
+    <hr style="width:850px; border-top:6px solid #336699;" />
+    
+    <div class="d-flex" style="gap:6rem;">
+        
+        <!--Left Column: uncertainties-->
+        <div class="limited-col hanging-indent">
+
+            <h7><strong> Which of the following types of uncertainties are in the game?</strong></h7>
+            @foreach (var gc in GameComplexities)
+            {
+                <div class="d-flex align-items-center" style="gap:.5rem; margin-top:.5rem;">
+                    <!-- YES toggle -->
+                    <button type="button"
+                            class="circular-sm-btn @(gc.Answer == "Yes" ? "selected" : "")"
+                            @onclick='() => {ToggleAnswer(gc, "Yes"); Calculate(); } '>
+                            
+                    </button>
+                    <label class="mb-0">@gc.Text</label>
+
+                </div>
+            }
+
+
+        </div>
+
+        <!--Right Column: Comments -->
+        <div class="limited-col hanging-indent">
+            <label class="mb-0 me-2">@Comments.Text</label>
+
+            <InputText 
+                       @bind-Value="Comments.Answer"
+                       @bind-Value:event="oninput"
+                       class="form-control"
+                       placeholder="@Comments.Placeholder"
+                       style="max-width:500px;" />
+
+        </div>
+    </div>
+  
+
+    <button class="btn btn-primary" type="submit">Submit</button>
+</div>
+
+
+<h4>Results:</h4>
+<ul>
+
+        @foreach (var pd in ProjectDecisions)
+        {
+        <li><strong>@pd.Text</strong>: @pd.Answer</li>
+        }
+
+    @foreach (var pq in PotentialConsequences)
+    {
+        <li><strong>@pq.Text</strong>: @pq.Answer</li>
+    }
+
+    @foreach (var gc in GameComplexities)
+    {
+        <li><strong>@gc.Text</strong>: @gc.Answer</li>
+    }
+
+    <li><strong> @ProjectValue.Text:</strong> @ProjectValue.Answer</li>
+
+    <li><strong> @InteractionRisk.Text:</strong> @InteractionRisk.Answer</li>
+
+    <li><strong> @MgmtRadar.Text:</strong> @MgmtRadar.Answer</li>
+
+    <li><strong>Left flag:</strong> @Left</li>
+
+    <li><strong> Combined Output:</strong> @CombinedOutput</li>
+</ul>
+
+
+@code {
+    private bool Submitted = false;
+    private bool Left;
+    private bool Top;
+    string ? CombinedOutput;
+
+    private ValueQuestion ProjectValue = new ValueQuestion
+        {
+            Text = "Enter the potential value:",
+            Answer = 0
+        };
+
+    private ValueQuestion MgmtRadar = new ValueQuestion
+        {
+            Text = "Enter the amount needed to get on managements radar:",
+            Answer = 0
+        };
+
+    private PercentQuestion InteractionRisk = new PercentQuestion
+        {
+            Text = "Enter the Interaction Risk:",
+            Answer = 0
+        };
+
+
+    private SelectOneQuestion InteractionDynamics = new SelectOneQuestion
+        (
+            "Classify high-level interaction dynamics",
+            new[] {"LIMITED", "SIGNIFICANT", "BID"}
+        );
+
+    private InputQuestion Comments = new InputQuestion
+        {
+            Text = "Comments",
+            Answer = ""
+        };
+
+    private List<YesNoQuestion> ProjectDecisions = new()
+    {
+        new YesNoQuestion { Text = "Deal-making/negotiations" },
+        new YesNoQuestion { Text = "JV/ Strategic Alliance Strategy" },
+        new YesNoQuestion { Text = "Alliance/Partner Management" },
+        new YesNoQuestion { Text = "Competitive positioning and/or risk" },
+        new YesNoQuestion { Text = "Market Entry" },
+        new YesNoQuestion { Text = "Country Entry" },
+        new YesNoQuestion { Text = "Political risk/governing relations" },
+        new YesNoQuestion { Text = "Bidding" },
+        new YesNoQuestion { Text = "Procurement" },
+        new YesNoQuestion { Text = "Litigation" },
+        new YesNoQuestion { Text = "Other (note in comment box)" },
+        new YesNoQuestion { Text = "Country Entry" }
+    };
+
+    private List<YesNoQuestion> PotentialConsequences = new()
+    {
+        new YesNoQuestion { Text = "Delays"},
+        new YesNoQuestion { Text = "Worsened competitive position"},
+        new YesNoQuestion { Text = "Poor deals (inadequate terms, leaving value on the table)" },
+        new YesNoQuestion { Text = "Reputational damage" },
+        new YesNoQuestion { Text = "Partner (supplier) misalignment" },
+        new YesNoQuestion { Text = "Missed opportunities" }
+    };
+
+    private List<YesNoQuestion> GameComplexities = new()
+    {
+        new YesNoQuestion { Text = "Private information"},
+        new YesNoQuestion { Text = "Learning event uncertainties"},
+        new YesNoQuestion { Text = "Significant uncertainties at the end of the game"}
+
+    };
+
+
+    private DropDownQuestion GameDynamicsType =
+        new DropDownQuestion(
+        "Based on the decisions above, what type of dynamics does the game involve:",
+        new[] { "Limited action-reaction dynamics", "Significant action-reaction dynamics", "Bidding" }
+    );
+
+
+    void ToggleAnswer(YesNoQuestion q, string val)
+    {
+        // if they clicked the already-selected option, clear it
+        if (q.Answer == val)
+            q.Answer = "";
+        else
+            q.Answer = val;
+    }
+
+
+    void Calculate()
+    {
+          CombinedOutput = string.Empty;
+        var riskPortion = InteractionRisk.Answer / 100m;          // decimal
+        var riskValue = ProjectValue.Answer * riskPortion;
+
+        @*
+        Calculations for output grid 
+        *@
+        if (ProjectValue.Answer == 0 || InteractionRisk.Answer == 0)
+        {
+            Left = true;
+            Console.WriteLine($"RiskPortion={riskPortion}, RiskValue={riskValue}, left =true");
+        }
+        else if (riskValue >= MgmtRadar.Answer)
+        {
+            Left = false;
+            Console.WriteLine($"RiskPortion={riskPortion}, RiskValue={riskValue}, left 0 false");
+           
+        }
+        else
+        {
+            Left = true;
+            Console.WriteLine($"RiskPortion={riskPortion}, RiskValue={riskValue}, left 0 true 2");
+        }
+
+        if (InteractionDynamics.SelectedOption ==  "LIMITED")
+        {
+            Top = false;
+           
+        }
+        else
+        {
+            Top = true;
+        }
+
+        @*
+        Calculations for combined output
+        *@
+
+        foreach (var gc in GameComplexities)
+        {
+            if (gc.Text == "Private information" && gc.Answer == "Yes")
+            {
+                CombinedOutput += " Your game should consider the potential impact of private information, and how to best elicit information or send messages to reduce the uncertainty, or how to use private information to influence others. ";
+            }
+            if (gc.Text == "Learning event uncertainties" && gc.Answer == "Yes")
+            {
+                CombinedOutput += " In the framing, be sure to capture uncertainties that will be revealed before all players' moves are made, and the implications for our and others' decisions.";
+            }
+            if (gc.Text == "Significant uncertainties at the end of the game" && gc.Answer == "Yes")
+            {
+                CombinedOutput += " You likely need to consider probabilistic analysis to understand the range of value from key uncertainties, perhaps for all the key players.";
+            }
+        }
+    }
+}
+
