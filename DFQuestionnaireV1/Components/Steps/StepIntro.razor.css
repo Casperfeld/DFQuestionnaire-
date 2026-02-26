@@ -1,0 +1,45 @@
+﻿
+.circular-sm-btn {
+    /*width: 1rem;
+    height: 1rem;
+    padding: 0;
+    font-size: 0.8rem;
+    border-radius: 50%;
+    background: white;
+    border-color: black*/
+    display: inline-block; /* avoid weird flex/baseline sizing */
+    width: 1rem;
+    aspect-ratio: 1 / 1; /* guarantees perfect square */
+    padding: 0;
+    border: 1px solid black; /* actual border, not just color */
+    border-radius: 50%;
+    background-color: white;
+    line-height: 1; /* no extra vertical space */
+    -webkit-appearance: none; /* kill native button chrome */
+    appearance: none;
+    flex: 0 0 auto;
+}
+
+    .circular-sm-btn.selected {
+            background: gray;
+            border-color: black;
+        }
+
+/* 1) limit the column to 200px (adjust as you like) */
+.limited-col {
+    max-width: 350px;
+    overflow-wrap: break-word; /* force long words to wrap */
+}
+
+
+/*
+input.no-spin::-webkit-outer-spin-button,
+input.no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input.no-spin[type=number] {
+    -moz-appearance: textfield; 
+    appearance: textfield; /* Future/others */
+}

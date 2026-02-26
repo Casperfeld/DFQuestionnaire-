@@ -1,0 +1,343 @@
+﻿@namespace DFQuestionnaireV1.Components.Steps
+@using DFQuestionnaireV1.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject DFQuestionnaireV1.Repositories.IQuestionRepository Questions
+@inject QuestionnaireState State
+@inject DFQuestionnaireV1.Models.QuestionnaireState State
+
+
+<div class="step">
+   
+    <h4><strong> Stakeholder Complexity </strong></h4>
+    <hr style="width:850px; border-top:6px solid #336699;" />
+
+    <div class="d-flex" style="gap:6rem;">
+
+        <!--Left Column: Dynamic Types -->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    3. Select the types of dynamics involved.
+                </em>
+
+            </h7>
+
+            <div class="d-flex flex-column" style="gap:.35rem;" role="group" aria-label="Potential consequences">
+                @foreach (var pd in Questions.GetProjectDecisions())
+                {
+                    @*
+                    <div class="mb-1 d-flex align-items-center" style="gap:.2rem;">
+
+
+                        <!-- YES toggle -->
+                        <button type="button"
+                                class="circular-sm-btn @(pd.Answer == "Yes" ? "selected" : "")"
+                                @onclick='() => ToggleAnswer(pd, "Yes")'>
+                        </button>
+
+                        <label>@pd.Text</label>
+
+                    </div>*@
+
+                         var id = $"pc-{pd.Id}";
+
+                        <FluentCheckbox 
+                                        @key="pd.Id"
+                                        Id="@id"
+                                       
+                                        Checked="@IsChecked(pd.Id)"
+                                        CheckedChanged="(bool v) => SetChecked(pd.Id, v)">
+                            @pd.Text
+                        </FluentCheckbox>
+                }
+            </div>
+        </div>
+
+        <!--Right Column: Interaction Dynamics-->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    4. Classify the high-level interaction dynamics
+                </em>
+
+            </h7>
+
+            <br>
+
+
+            <div class="mb-3">
+
+                @*
+                @foreach (var opt in InteractionDynamics.Options)
+                {
+                    <div class="mb-1">
+                        <!-- 1) Button + label on one line -->
+                        <div class="d-flex align-items-center" style="gap:.2rem;">
+                            <button type="button"
+                                    class="circular-sm-btn @(InteractionDynamics.SelectedOption == opt ? "selected" : "")"
+                                    @onclick='() => {
+                                        InteractionDynamics.SelectedOption = opt;
+                                        State.InteractionDynamics=opt;
+                                        Calculate();
+
+                                    }'>
+                            </button>
+                            <label class="mb-0">@opt</label>
+                        </div>
+
+                        <!-- 2) Description below, only for the selected option -->
+                        <p class="ps-4 text-muted mb-2">
+                            @if (opt == "LIMITED")
+                            {
+                                <h12>
+                                    1 or 2 actions and reactions by stakeholders
+                                </h12>
+
+                            }
+                            else if (opt == "SIGNIFICANT")
+                            {
+                                <h12>
+                                    Several actions and reactions, sometimes with multiple stakeholders.
+                                </h12>
+
+                            }
+                            else if (opt == "BID")
+                            {
+                                <h12>
+                                    Stakeholder actions &reactions could occur pre or post bid.
+                                </h12>
+
+                            }
+                        </p>
+
+                    </div>
+                }*@
+
+                <FluentRadioGroup TValue="string"
+                                  Name="interactionDynamics"
+                                  @bind-Value="State.InteractionDynamics" 
+                                  Orientation="Orientation.Vertical">
+                   
+
+                    @foreach (var opt in InteractionDynamics.Options)
+                    {
+                        
+                            <FluentRadio Value="@opt">@opt</FluentRadio>                                                 
+                        
+                    }
+                </FluentRadioGroup>
+                @if (!string.IsNullOrWhiteSpace(State.InteractionDynamics))
+                {
+                    <div class="dyn-desc">
+                        @GetDynamicsDescription(State.InteractionDynamics)
+                    </div>
+                }
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+
+
+
+    @*
+    <!-- Yes/No example -->
+    <section class="grp">
+        <label class="lbl">Question 1</label>
+        <div class="choices">
+            <button type="button"
+                    class="choice @(State.Q1YesNo == true ? "sel" : null)"
+                    @onclick="(() => State.Q1YesNo = true)">
+                Yes
+            </button>
+            <button type="button"
+                    class="choice @(State.Q1YesNo == false ? "sel" : null)"
+                    @onclick="(() => State.Q1YesNo = false)">
+                No
+            </button>
+        </div>
+
+        @if (State.Q1YesNo is null)
+        {
+            <div class="hint">Please choose Yes or No.</div>
+        }
+    </section>
+
+    <!-- Numeric value example -->
+    <section class="grp">
+        <label class="lbl" for="valueQ">Value</label>
+        <input id="valueQ" type="number" inputmode="numeric"
+               @bind="State.ValueQ" class="num" placeholder="Enter a number" />
+
+        @if (!State.ValueQ.HasValue)
+        {
+            <div class="hint">Enter a value to continue.</div>
+        }
+    </section>
+
+    <!-- Percent example -->
+    <section class="grp">
+        <label class="lbl" for="percentQ">Percent</label>
+        <div class="row">
+            <input id="percentQ" type="number" min="0" max="100" step="1"
+                   @bind="State.PercentQ" class="num small" />
+            <span>%</span>
+        </div>
+
+        @if (State.PercentQ.HasValue && (State.PercentQ < 0 || State.PercentQ > 100))
+        {
+            <div class="err">Percent must be between 0 and 100.</div>
+        }
+        @if (!State.PercentQ.HasValue)
+        {
+            <div class="hint">Set a percentage (0–100).</div>
+        }
+    </section>
+
+    <!-- Tiny live preview (optional) -->
+    <section class="preview">
+        <div><strong>Current answers:</strong></div>
+        <div>Q1: @(State.Q1YesNo is null ? "—" : (State.Q1YesNo == true ? "Yes" : "No"))</div>
+        <div>Value: @(State.ValueQ?.ToString() ?? "—")</div>
+        <div>Percent: @(State.PercentQ?.ToString() ?? "—")%</div>
+    </section>*@
+</div>
+
+<style>
+    .step {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    h2 {
+        margin: 0 0 .75rem 0;
+    }
+
+    .grp {
+        margin: 1rem 0 1.25rem;
+    }
+
+    .lbl {
+        display: block;
+        font-weight: 600;
+        margin-bottom: .4rem;
+    }
+
+    .choices {
+        display: flex;
+        gap: .5rem;
+    }
+
+    .choice {
+        padding: .45rem .9rem;
+        border: 1px solid #bbb;
+        border-radius: .6rem;
+        background: white;
+        cursor: pointer;
+    }
+
+        .choice.sel {
+            border-color: #333;
+        }
+
+    .num {
+        width: 10rem;
+        padding: .4rem .5rem;
+        border: 1px solid #bbb;
+        border-radius: .4rem;
+    }
+
+        .num.small {
+            width: 6rem;
+        }
+
+    .row {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .hint {
+        font-size: .92rem;
+        color: #555;
+        margin-top: .35rem;
+    }
+
+    .err {
+        font-size: .92rem;
+        color: #b00020;
+        margin-top: .35rem;
+    }
+
+    .preview {
+        margin-top: 1.25rem;
+        padding: .75rem;
+        border: 1px dashed #ddd;
+        border-radius: .5rem;
+        font-size: .95rem;
+        color: #333;
+    }
+</style>
+    @code{
+
+
+    private SelectOneQuestion InteractionDynamics = new SelectOneQuestion
+       (
+           "Classify high-level interaction dynamics",
+           new[] { "LIMITED", "SIGNIFICANT", "BID" }
+       );
+
+
+        void Calculate()
+        {
+            
+        }
+
+        void ToggleAnswer(YesNoQuestion q, string val)
+        {
+            // if they clicked the already-selected option, clear it
+            if (q.Answer == val)
+                q.Answer = "";
+            else
+                q.Answer = val;
+        }
+    protected override void OnInitialized()
+    {
+        //Console.WriteLine($"[StepIntro] State.InstanceId = {State.InstanceId}");
+    }
+
+    private bool IsChecked(int id)//testing
+    {
+        var has = State.ProjectDecisionsYes.Contains(id);
+        Console.WriteLine($"[IsChecked] {id} -> {has}");
+        return has;
+    }
+    private void SetChecked(int id, bool value)
+    {
+        if (value)
+            State.ProjectDecisionsYes.Add(id);
+        else
+            State.ProjectDecisionsYes.Remove(id);
+
+        Console.WriteLine($"[SetChecked] {id} -> {value}");
+    }
+
+    private static string GetDynamicsDescription(string opt) => opt switch
+    {
+        "LIMITED" => "1 or 2 actions and reactions by stakeholders",
+        "SIGNIFICANT" => "Several actions and reactions, sometimes with multiple stakeholders.",
+        "BID" => "Stakeholder actions & reactions could occur pre or post bid.",
+        _ => string.Empty
+    };
+}
+

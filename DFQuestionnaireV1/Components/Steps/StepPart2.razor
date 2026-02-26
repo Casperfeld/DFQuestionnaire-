@@ -1,0 +1,176 @@
+﻿@namespace DFQuestionnaireV1.Components.Steps
+@using DFQuestionnaireV1.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject DFQuestionnaireV1.Models.QuestionnaireState State
+@inject QuestionnaireState State
+@inject DFQuestionnaireV1.Repositories.IQuestionRepository Questions
+
+<div class="step">
+   
+
+    <h4><strong> Uncertainties </strong></h4>
+    <hr style="width:850px; border-top:6px solid #336699;" />
+
+    <div class="d-flex" style="gap:6rem;">
+
+        <!--Left Column: uncertainties-->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    5. Which of the following types of uncertainties are in the game?
+                </em>
+
+            </h7>
+
+            <br />
+            @foreach (var gc in Questions.GetGameComplexities())
+            {
+                var id = $"pc-{gc.Id}";
+                <FluentCheckbox @key="gc.Id"
+                                Id="@id"
+                                Checked="@IsChecked(gc.Id)"
+                                CheckedChanged="(bool v) => SetChecked(pq.Id, v)">
+                    @gc.Text
+                </FluentCheckbox>
+            }
+
+
+        </div>
+
+        <!--Right Column: Comments -->
+        <div class="limited-col hanging-indent">
+
+            <h7>
+                <em>
+                    6. Comments 
+                </em>
+
+            </h7>
+
+            @*<label class="mb-0 me-2">@Comments.Text</label>*@
+
+            <InputText @bind-Value="Comments.Answer"
+                       @bind-Value:event="oninput"
+                       class="form-control"
+                       placeholder="@Comments.Placeholder"
+                       style="max-width:500px;" />
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private static string DisplayChoice(int? id) => id switch
+    {
+        1 => "Conservative",
+        2 => "Balanced",
+        3 => "Aggressive",
+        4 => "Unsure",
+        _ => "—"
+    };
+}
+
+<style>
+    .step {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    h2 {
+        margin: 0 0 .75rem 0;
+    }
+
+    .grp {
+        margin: 1rem 0 1.25rem;
+    }
+
+    .lbl {
+        display: block;
+        font-weight: 600;
+        margin-bottom: .4rem;
+    }
+
+    .btns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+        gap: .6rem;
+    }
+
+    .btn {
+        text-align: left;
+        padding: .7rem .9rem;
+        border: 1px solid #bbb;
+        border-radius: .7rem;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+        .btn .t {
+            font-weight: 600;
+        }
+
+        .btn .d {
+            font-size: .92rem;
+            color: #555;
+        }
+
+        .btn.sel {
+            border-color: #333;
+        }
+
+    .ta {
+        width: 100%;
+        min-height: 5.5rem;
+        padding: .5rem .6rem;
+        border: 1px solid #bbb;
+        border-radius: .5rem;
+    }
+
+    .hint {
+        font-size: .92rem;
+        color: #555;
+        margin-top: .35rem;
+    }
+
+    .preview {
+        margin-top: 1.1rem;
+        padding: .75rem;
+        border: 1px dashed #ddd;
+        border-radius: .5rem;
+        font-size: .95rem;
+        color: #333;
+    }
+</style>
+@code{
+    private InputQuestion Comments = new InputQuestion
+        {
+            Text = "Comments",
+            Answer = ""
+        };
+
+   
+
+    void Calculate()
+    {
+
+    }
+
+    void ToggleAnswer(YesNoQuestion q, string val)
+    {
+        // if they clicked the already-selected option, clear it
+        if (q.Answer == val)
+            q.Answer = "";
+        else
+            q.Answer = val;
+    }
+    private bool IsChecked(int id)//testing
+    {
+        var has = State.PotentialConsequencesYes.Contains(id);
+        Console.WriteLine($"[IsChecked] {id} -> {has}");
+        return has;
+    }
+}

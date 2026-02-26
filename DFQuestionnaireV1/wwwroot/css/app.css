@@ -101,3 +101,22 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+input.no-spin[type="number"]::-webkit-inner-spin-button,
+input.no-spin[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+}
+
+input.no-spin[type="number"] {
+    -moz-appearance: textfield !important; /* Firefox */
+    appearance: textfield !important;
+    -webkit-appearance: none !important; /* extra nudge for Safari/Edge */
+}
+
+/* Optional: general reset on the element */
+input.no-spin {
+    appearance: textfield !important;
+}

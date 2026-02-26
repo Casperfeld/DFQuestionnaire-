@@ -1,0 +1,236 @@
+﻿@namespace DFQuestionnaireV1.Components.Steps
+@using DFQuestionnaireV1.Models
+@using DFQuestionnaireV1.Components.Steps
+@using DFQuestionnaireV1.Repositories
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject QuestionnaireState State
+@inject IQuestionRepository Questions
+@inject NavigationManager Nav
+
+<div class="step">
+
+
+    <div class="quadrant-grid">
+        <!-- top-left -->
+        <div class="quadrant @(Left && Top ? "highlight" : "")">
+            Top Left
+        </div>
+
+        <!-- top-right -->
+        <div class="quadrant @(!Left && Top ? "highlight" : "")">
+            Top Right
+        </div>
+
+        <!-- bottom-left -->
+        <div class="quadrant @(Left && !Top ? "highlight" : "")">
+            Bottom Left
+        </div>
+
+        <!-- bottom-right -->
+        <div class="quadrant @(!Left && !Top ? "highlight" : "")">
+            Bottom Right
+        </div>
+    </div>
+
+
+    <style>
+
+        .quadrant-grid {
+            display: grid;
+          
+            grid-template-columns: repeat(2, 8rem); /* try 6rem/120px/etc */
+            gap: 4px;
+            width: fit-content; /* so the grid hugs its cells */
+        }
+
+        .quadrant {
+            border: 1px solid #ccc;
+            padding: 1rem;
+            text-align: center;
+            /* dimensions */
+            min-height: 5rem;
+            min-length: 5rem;
+        }
+
+        .highlight {
+            background-color: #fffa8f; /* pale yellow */
+        }
+    </style>
+
+    @*
+    <h3>Potential Consequences</h3>
+
+    <ul>
+        @foreach (var q in Questions.GetPotentialConsequences())
+        {
+            var isSelected = State.PotentialConsequencesYes.Contains(q.Id); // HashSet<int>
+            <li>@q.Text — @(isSelected ? "Selected" : "Not selected")</li>
+        }
+    </ul>
+
+    <!-- (Optional) quick totals -->
+    <p>
+        Selected: @State.PotentialConsequencesYes.Count /
+        Total: @Questions.GetPotentialConsequences().Count
+    </p>
+
+   @* <h2>Summary</h2>
+
+    <section class="card">
+        <div class="score-label">Score</div>
+        <div class="score">@State.Score.ToString("0.##")</div>
+        <div class="sub">Based on your inputs below.</div>
+    </section>
+
+    <section class="recap">
+        <h3>Your answers</h3>
+        <ul>
+            <li><strong>Q1 (Yes/No):</strong> @YesNo(State.Q1YesNo)</li>
+            <li><strong>Value:</strong> @(State.ValueQ?.ToString() ?? "—")</li>
+            <li><strong>Percent:</strong> @(State.PercentQ?.ToString() ?? "—")%</li>
+            <li><strong>Preference:</strong> @Choice(State.Preference)</li>
+            @if (!string.IsNullOrWhiteSpace(State.Notes))
+            {
+                <li><strong>Notes:</strong> @State.Notes</li>
+            }
+        </ul>
+    </section>
+
+    <section class="actions">
+        <button type="button" class="btn primary" @onclick="Restart">Start over</button>
+        <a class="btn" href="/questionnaire/3">Back to Part 3</a>
+        <a class="btn" href="/questionnaire/2">Back to Part 2</a>
+    </section>*@
+</div>
+
+@code {
+    
+
+    private decimal RiskPortion => ((decimal)(State.InteractionRisk ?? 0)) / 100m;
+    private decimal RiskValue => ((decimal)(State.ProjectValue ?? 0)) * RiskPortion;
+    private bool Left => (State.ProjectValue ?? 0) == 0
+                         || (State.InteractionRisk ?? 0) == 0
+                         ? true
+                         : RiskValue < (decimal)(State.MgmtRadar ?? 0);
+
+
+
+
+
+
+
+
+
+
+
+
+     private bool Top => !string.Equals(State.InteractionDynamics?.Trim(),
+                                           "LIMITED",
+                                           StringComparison.OrdinalIgnoreCase);
+
+    protected override void OnParametersSet()
+    {
+        // Re-run your real calculations whenever the Summary step is shown.
+        //State.Recompute();
+    }
+
+    private void Restart()
+    {
+        State.Reset();
+        Nav.NavigateTo("/questionnaire/1");
+    }
+
+    private static string YesNo(bool? b) => b is null ? "—" : (b == true ? "Yes" : "No");
+
+    private static string Choice(int? id) => id switch
+    {
+        1 => "Conservative",
+        2 => "Balanced",
+        3 => "Aggressive",
+        4 => "Unsure",
+        _ => "—"
+    };
+
+   
+}
+
+<style>
+    .step {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    h2 {
+        margin: 0 0 .75rem 0;
+    }
+
+    .card {
+        margin: .5rem 0 1rem;
+        padding: 1rem;
+        border: 1px solid #e5e5e5;
+        border-radius: .75rem;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: end;
+        gap: .5rem 1rem;
+    }
+
+    .score-label {
+        font-size: .95rem;
+        color: #666;
+    }
+
+    .score {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .sub {
+        grid-column: 1 / -1;
+        font-size: .95rem;
+        color: #555;
+    }
+
+    .recap h3 {
+        margin: .5rem 0 .4rem;
+    }
+
+    .recap ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .recap li {
+        padding: .35rem 0;
+        border-bottom: 1px dashed #eee;
+    }
+
+        .recap li:last-child {
+            border-bottom: 0;
+        }
+
+    .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: 1rem;
+    }
+
+    .btn {
+        padding: .5rem .9rem;
+        border: 1px solid #ccc;
+        border-radius: .6rem;
+        background: white;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+        .btn.primary {
+            border-color: #333;
+        }
+</style>
+
