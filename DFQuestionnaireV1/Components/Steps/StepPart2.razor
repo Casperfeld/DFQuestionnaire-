@@ -28,8 +28,8 @@
                 var id = $"pc-{gc.Id}";
                 <FluentCheckbox @key="gc.Id"
                                 Id="@id"
-                                Checked="@IsChecked(gc.Id)"
-                                CheckedChanged="(bool v) => SetChecked(gc.Id, v)">
+                                Value="@IsChecked(gc.Id)"
+                                ValueChanged="(bool v) => SetChecked(gc.Id, v)">
                     @gc.Text
                 </FluentCheckbox>
             }

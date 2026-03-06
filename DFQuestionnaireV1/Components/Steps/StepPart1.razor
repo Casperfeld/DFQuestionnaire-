@@ -45,8 +45,8 @@
                                         @key="pd.Id"
                                         Id="@id"
                                        
-                                        Checked="@IsChecked(pd.Id)"
-                                        CheckedChanged="(bool v) => SetChecked(pd.Id, v)">
+                                        Value="@IsChecked(pd.Id)"
+                                        ValueChanged="(bool v) => SetChecked(pd.Id, v)">
                             @pd.Text
                         </FluentCheckbox>
                 }
