@@ -47,8 +47,7 @@ namespace DFQuestionnaireV1.Repositories
             new YesNoQuestion {Id=14, Text = "Bidding" },
             new YesNoQuestion {Id=15, Text = "Procurement" },
             new YesNoQuestion {Id=16, Text = "Litigation" },
-            new YesNoQuestion {Id=17, Text = "Other (note in comment box)" },
-            new YesNoQuestion {Id=18, Text = "Country Entry" }
+            new YesNoQuestion {Id=17, Text = "Other (note in comment box)" }
 
 
         };

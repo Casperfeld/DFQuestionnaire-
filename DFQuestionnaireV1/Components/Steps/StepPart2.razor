@@ -2,7 +2,6 @@
 @using DFQuestionnaireV1.Models
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject DFQuestionnaireV1.Models.QuestionnaireState State
-@inject QuestionnaireState State
 @inject DFQuestionnaireV1.Repositories.IQuestionRepository Questions
 
 <div class="step">
@@ -30,7 +29,7 @@
                 <FluentCheckbox @key="gc.Id"
                                 Id="@id"
                                 Checked="@IsChecked(gc.Id)"
-                                CheckedChanged="(bool v) => SetChecked(pq.Id, v)">
+                                CheckedChanged="(bool v) => SetChecked(gc.Id, v)">
                     @gc.Text
                 </FluentCheckbox>
             }
@@ -50,10 +49,10 @@
 
             @*<label class="mb-0 me-2">@Comments.Text</label>*@
 
-            <InputText @bind-Value="Comments.Answer"
+            <InputText @bind-Value="State.Notes"
                        @bind-Value:event="oninput"
                        class="form-control"
-                       placeholder="@Comments.Placeholder"
+                       placeholder="Enter any comments..."
                        style="max-width:500px;" />
 
         </div>
@@ -146,11 +145,6 @@
     }
 </style>
 @code{
-    private InputQuestion Comments = new InputQuestion
-        {
-            Text = "Comments",
-            Answer = ""
-        };
 
    
 
@@ -167,10 +161,14 @@
         else
             q.Answer = val;
     }
-    private bool IsChecked(int id)//testing
+    private bool IsChecked(int id)
     {
-        var has = State.PotentialConsequencesYes.Contains(id);
-        Console.WriteLine($"[IsChecked] {id} -> {has}");
-        return has;
+        return State.GameComplexitiesYes.Contains(id);
+    }
+
+    private void SetChecked(int id, bool value)
+    {
+        if (value) State.GameComplexitiesYes.Add(id);
+        else State.GameComplexitiesYes.Remove(id);
     }
 }
